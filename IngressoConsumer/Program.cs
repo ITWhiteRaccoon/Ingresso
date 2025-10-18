@@ -1,10 +1,26 @@
-﻿using IngressoApi.Models;
+﻿using Ingresso.SwaggerModels;
+using IngressoApi.Models;
 using IngressoApi.Services;
 
 namespace IngressoConsumer;
 
 class Program {
     static async Task Main(string[] args) {
+        //await Test1();
+        await Test2();
+    }
+
+    static async Task Test2() {
+        var client = new Client("https://api-content.ingresso.com/", new HttpClient());
+
+        var states = await client.StatesAllAsync();
+        Console.WriteLine($"First state: {states.First().Uf} - {states.First().Name}");
+
+        var events = await client.PartnershipAsync("test", false);
+        Console.WriteLine(events);
+    }
+
+    static async Task Test1() {
         // Create an instance of our API client
         var client = new IngressoClient("v0", "test");
 
