@@ -11,4 +11,9 @@
       <ProjectReference Include="..\IngressoApi\IngressoApi.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+      <PackageReference Include="Spectre.Console" Version="0.52.1-preview.0.5" />
+    </ItemGroup>
+
 </Project>

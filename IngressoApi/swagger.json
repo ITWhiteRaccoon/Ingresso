@@ -11,6 +11,7 @@
           "Events"
         ],
         "summary": "Get all events available",
+        "operationId": "GetAllEvents",
         "parameters": [
           {
             "name": "partnership",
@@ -55,6 +56,7 @@
           "Events"
         ],
         "summary": "Get all events",
+        "operationId": "GetEventsByTagName",
         "parameters": [
           {
             "name": "tagName",
@@ -112,6 +114,7 @@
           "Events"
         ],
         "summary": "Return a single event",
+        "operationId": "GetEventById",
         "parameters": [
           {
             "name": "id",
@@ -166,6 +169,7 @@
           "Events"
         ],
         "summary": "Get a single event by his URLKey",
+        "operationId": "GetEventByUrlKey",
         "parameters": [
           {
             "name": "urlKey",
@@ -220,6 +224,7 @@
           "Events"
         ],
         "summary": "Return coming soon events",
+        "operationId": "GetComingSoonEvents",
         "parameters": [
           {
             "name": "partnership",
@@ -273,6 +278,7 @@
           "Events"
         ],
         "summary": "Return events by city",
+        "operationId": "GetEventsByCity",
         "parameters": [
           {
             "name": "cityId",
@@ -335,6 +341,7 @@
         "tags": [
           "PassportPromotion"
         ],
+        "operationId": "GetPassportPromotions",
         "responses": {
           "200": {
             "description": "List of passport promotion",
@@ -358,6 +365,7 @@
           "Sessions"
         ],
         "summary": "Get a single session",
+        "operationId": "GetSessionById",
         "parameters": [
           {
             "name": "id",
@@ -412,6 +420,7 @@
           "Sessions"
         ],
         "summary": "Get a list of sessions by city and theater",
+        "operationId": "GetSessionsByCityAndTheater",
         "parameters": [
           {
             "name": "cityId",
@@ -482,6 +491,7 @@
           "Sessions"
         ],
         "summary": "Get a list of sessions by city and theater",
+        "operationId": "GetSessionsByCityAndTheaterGrouped",
         "parameters": [
           {
             "name": "cityId",
@@ -552,6 +562,7 @@
           "Sessions"
         ],
         "summary": "Get a list of sessions by city and theater's slug",
+        "operationId": "GetSessionsByCityAndTheaterUrlKey",
         "parameters": [
           {
             "name": "cityId",
@@ -622,6 +633,7 @@
           "Sessions"
         ],
         "summary": "Get a list of sessions by city and event",
+        "operationId": "GetSessionsByCityAndEvent",
         "parameters": [
           {
             "name": "cityId",
@@ -701,6 +713,7 @@
           "Sessions"
         ],
         "summary": "Get a list of sessions by city and event",
+        "operationId": "GetSessionsByCityAndEventGrouped",
         "parameters": [
           {
             "name": "cityId",
@@ -780,6 +793,7 @@
           "Sessions"
         ],
         "summary": "Get a list of sessions by event and partnership",
+        "operationId": "GetSessionsByEvent",
         "description": "The Partnership Id serves as a filter. When a valid Partnership Id is provided, the resulting list of sessions will be narrowed down. \r\nHowever, if an invalid Partnership Id is provided, the filter won’t be applied, and all sessions for the given EventId will be returned.",
         "parameters": [
           {
@@ -829,6 +843,7 @@
           "Sessions"
         ],
         "summary": "Get a list of sessions by city and event's slug",
+        "operationId": "GetSessionsByCityAndEventUrlKey",
         "parameters": [
           {
             "name": "cityId",
@@ -924,6 +939,7 @@
           "Sessions"
         ],
         "summary": "Get the dates that have sessions in the informed theater",
+        "operationId": "GetSessionDatesByCityAndTheater",
         "parameters": [
           {
             "name": "cityId",
@@ -985,6 +1001,7 @@
           "Sessions"
         ],
         "summary": "Get the available dates for the informed movie",
+        "operationId": "GetSessionDatesByCityAndEvent",
         "parameters": [
           {
             "name": "cityId",
@@ -1046,6 +1063,7 @@
           "Sessions"
         ],
         "summary": "Verify if exists any session by event UrlKey",
+        "operationId": "CheckSessionExistsByUrlKey",
         "parameters": [
           {
             "name": "urlKey",
@@ -1077,6 +1095,7 @@
           "States"
         ],
         "summary": "Get all states and cities available",
+        "operationId": "GetAllStates",
         "responses": {
           "200": {
             "description": "List of states",
@@ -1103,6 +1122,7 @@
           "States"
         ],
         "summary": "Get a single state and cities",
+        "operationId": "GetStateByUF",
         "parameters": [
           {
             "name": "uf",
@@ -1141,6 +1161,7 @@
           "States"
         ],
         "summary": "Get a single city by Id",
+        "operationId": "GetCityById",
         "parameters": [
           {
             "name": "id",
@@ -1179,6 +1200,7 @@
           "States"
         ],
         "summary": "Get a single city by UrlKey",
+        "operationId": "GetCityByUrlKey",
         "parameters": [
           {
             "name": "urlKey",
@@ -1217,6 +1239,7 @@
           "States"
         ],
         "summary": "Return cities next to the given lat/long",
+        "operationId": "GetCitiesByCoordinates",
         "parameters": [
           {
             "name": "lat",
@@ -1289,6 +1312,7 @@
           "States"
         ],
         "summary": "Get a city by TheaterSlug",
+        "operationId": "GetCityByTheaterSlug",
         "parameters": [
           {
             "name": "theaterSlug",
@@ -1327,6 +1351,7 @@
           "Tags"
         ],
         "summary": "Return tags",
+        "operationId": "GetAllTags",
         "responses": {
           "200": {
             "description": "List of tags",
@@ -1356,6 +1381,7 @@
           "Templates"
         ],
         "summary": "Get all soon events by city",
+        "operationId": "GetTemplateSoonByCity",
         "parameters": [
           {
             "name": "cityId",
@@ -1413,6 +1439,7 @@
           "Templates"
         ],
         "summary": "Get all highlights events by city and theater",
+        "operationId": "GetTemplateHighlightsByCity",
         "parameters": [
           {
             "name": "cityId",
@@ -1478,6 +1505,7 @@
           "Templates"
         ],
         "summary": "Get all now playing events",
+        "operationId": "GetTemplateNowPlaying",
         "parameters": [
           {
             "name": "partnership",
@@ -1531,6 +1559,7 @@
           "Templates"
         ],
         "summary": "Get all now playing events by city",
+        "operationId": "GetTemplateNowPlayingByCity",
         "parameters": [
           {
             "name": "cityId",
@@ -1594,6 +1623,7 @@
           "Templates"
         ],
         "summary": "Get all premiere events by city",
+        "operationId": "GetTemplatePremiereByCity",
         "description": "Return a list of movies, which have premiered in the last 7 days, including the current day. The 7 days are counted based on UTC time.",
         "parameters": [
           {
@@ -1640,6 +1670,7 @@
           "Theaters"
         ],
         "summary": "Get all theaters available",
+        "operationId": "GetAllTheaters",
         "parameters": [
           {
             "name": "partnership",
@@ -1687,6 +1718,7 @@
           "Theaters"
         ],
         "summary": "Get a single theater by Id",
+        "operationId": "GetTheaterById",
         "parameters": [
           {
             "name": "id",
@@ -1744,6 +1776,7 @@
           "Theaters"
         ],
         "summary": "Get a single theater by his URLKey",
+        "operationId": "GetTheaterByUrlKey",
         "parameters": [
           {
             "name": "urlKey",
@@ -1801,6 +1834,7 @@
           "Theaters"
         ],
         "summary": "Get all theaters by city",
+        "operationId": "GetTheatersByCity",
         "parameters": [
           {
             "name": "cityId",

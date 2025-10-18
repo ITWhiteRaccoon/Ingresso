@@ -1,62 +1,109 @@
-﻿using Ingresso.SwaggerModels;
-using IngressoApi.Models;
+﻿using IngressoApi.Models;
 using IngressoApi.Services;
+using Spectre.Console;
 
 namespace IngressoConsumer;
 
 class Program {
-    static async Task Main(string[] args) {
-        //await Test1();
-        await Test2();
-    }
+    public static async Task Main(string[] args) {
+        var apiClient = new IngressoClient("v0", "test");
 
-    static async Task Test2() {
-        var client = new Client("https://api-content.ingresso.com/", new HttpClient());
-
-        var states = await client.StatesAllAsync();
-        Console.WriteLine($"First state: {states.First().Uf} - {states.First().Name}");
-
-        var events = await client.PartnershipAsync("test", false);
-        Console.WriteLine(events);
-    }
-
-    static async Task Test1() {
-        // Create an instance of our API client
-        var client = new IngressoClient("v0", "test");
-
-        Console.WriteLine("--- Ingresso.com API Example ---");
+        AnsiConsole.MarkupLine("[bold yellow]Welcome to the Movie Session Finder![/]");
 
         try {
-            // --- Example 1: Get all states ---
-            Console.WriteLine("\nFetching all states...");
-            var states = await client.GetStatesAsync();
-            if (states.Count > 0) {
-                Console.WriteLine($"Found {states.Count} states. The first one is: {states[0].Name} ({states[0].UF})");
+            await RunSelectionFlow(apiClient);
+        }
+        catch (Exception ex) {
+            AnsiConsole.WriteException(ex, ExceptionFormats.ShortenEverything);
+        }
+
+        AnsiConsole.MarkupLine("\n[green]Done.[/]");
+    }
+
+    public static async Task RunSelectionFlow(IngressoClient apiClient) {
+        // 1. Select State
+        var states = await AnsiConsole.Status()
+            .StartAsync("Buscando estados...", async ctx => await apiClient.GetAllStatesWithCitiesAsync());
+
+        if (states.Count == 0) {
+            AnsiConsole.MarkupLine("[red]Não foi possível encontrar nenhum estado.[/]");
+            return;
+        }
+
+        var selectedState = AnsiConsole.Prompt(
+            new SelectionPrompt<State>()
+                .Title("Selecione um [green]Estado[/]:")
+                .AddChoices(states)
+                .PageSize(10)
+                .MoreChoicesText("[grey](Mova para cima e para baixo para ver mais estados)[/]")
+                .UseConverter(state => $"{state.Uf} - {state.Name}"));
+
+        // 2. Select City
+        if (selectedState.Cities.Count == 0) {
+            AnsiConsole.MarkupLine($"[red]Não há cidades disponíveis para {selectedState.Name}.[/]");
+            return;
+        }
+
+        var selectedCity = AnsiConsole.Prompt(
+            new SelectionPrompt<City>()
+                .Title("Selecione uma [green]Cidade[/]:")
+                .AddChoices(selectedState.Cities)
+                .PageSize(10)
+                .MoreChoicesText("[grey](Mova para cima e para baixo para ver mais cidades)[/]")
+                .UseConverter(city => city.Name));
+
+        // 3. Select Theater
+        var theaters = await AnsiConsole.Status()
+            .StartAsync("Buscando cinemas...", async ctx => await apiClient.GetTheatersByCityAsync(selectedCity.Id));
+
+        if (theaters.Count == 0) {
+            AnsiConsole.MarkupLine($"[red]Não há cinemas disponíveis em {selectedCity.Name}.[/]");
+            return;
+        }
+
+        var selectedTheater = AnsiConsole.Prompt(
+            new SelectionPrompt<Theater>()
+                .Title("Selecione um [green]Cinema[/]:")
+                .AddChoices(theaters)
+                .PageSize(10)
+                .MoreChoicesText("[grey](Mova para cima e para baixo para ver mais cinemas)[/]")
+                .UseConverter(theater => theater.Name));
+
+        // 4. Get and Display Sessions
+        var sessions = await AnsiConsole.Status()
+            .StartAsync("Buscando sessões...", async ctx => await apiClient.GetSessionsByTheaterAsync(selectedCity.Id, selectedTheater.Id));
+
+        AnsiConsole.Clear();
+        AnsiConsole.MarkupLine($"\n[bold yellow]Exibindo sessões para: {selectedTheater.Name}[/]");
+
+        if (sessions.Count == 0) {
+            AnsiConsole.MarkupLine("[red]Nenhuma sessão encontrada para os próximos dias.[/]");
+            return;
+        }
+
+        foreach (var day in sessions) {
+            var table = new Table().Expand();
+            table.Title = new TableTitle($"[white on blue] {day.DayOfWeek}, {day.DateFormatted} [/]");
+            table.AddColumn("Filme");
+            table.AddColumn("Duração");
+            table.AddColumn("Sala");
+            table.AddColumn("Horários");
+
+            foreach (var movie in day.Movies) {
+                foreach (var room in movie.Rooms) {
+                    var sessionTimes = string.Join(" ", room.Sessions.Select(s => $"[green]{s.Time}[/]"));
+                    var roomType = room.Type != null && room.Type.Count != 0 ? string.Join(", ", room.Type) : "Padrão";
+
+                    table.AddRow(
+                        $"{movie.Title} ([italic]{movie.ContentRating}[/])",
+                        $"{movie.Duration} min",
+                        $"{room.Name} ([dim]{roomType}[/])",
+                        sessionTimes
+                    );
+                }
             }
 
-            // --- Example 2: Get cities for a specific state (e.g., São Paulo) ---
-            var stateUf = UF.SP;
-            Console.WriteLine($"\nFetching cities for the state of {stateUf}...");
-            var cities = await client.GetCitiesByStateAsync(stateUf);
-            if (cities.Count > 0) {
-                // Assuming the first city in the list is the capital for this example
-                var firstCity = cities[0];
-                Console.WriteLine($"Found {cities.Count} cities. The first is: {firstCity.Name}");
-
-                // --- Example 3: Get theaters for that city ---
-                Console.WriteLine($"\nFetching theaters for the city of {firstCity.Name} (ID: {firstCity.Id})...");
-                var theaters = await client.GetTheatersByCityAsync(firstCity.Id);
-                Console.WriteLine(theaters.Count > 0 ? $"Found {theaters.Count} theaters. The first one is: {theaters[0].Name}" : $"No theaters found for {firstCity.Name}.");
-            }
-            else {
-                Console.WriteLine($"No cities found for {stateUf}.");
-            }
-        }
-        catch (HttpRequestException e) {
-            Console.WriteLine($"An error occurred while calling the API: {e.Message}");
-        }
-        catch (Exception e) {
-            Console.WriteLine($"An unexpected error occurred: {e.Message}");
+            AnsiConsole.Write(table);
         }
     }
 }

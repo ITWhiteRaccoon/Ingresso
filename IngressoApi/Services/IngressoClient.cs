@@ -19,48 +19,38 @@ public class IngressoClient {
     }
 
     /// <summary>
-    /// Fetches a list of all states.
+    /// Gets a list of all available states and their contained cities.
+    /// Perfect for populating State and City dropdowns.
     /// </summary>
-    /// <returns>A list of State objects.</returns>
-    public async Task<List<State>> GetStatesAsync() {
+    public async Task<List<State>> GetAllStatesWithCitiesAsync() {
         var responseString = await _httpClient.GetStringAsync("states");
-        return JsonConvert.DeserializeObject<List<State>>(responseString);
+        return JsonConvert.DeserializeObject<List<State>>(responseString) ?? [];
     }
 
     /// <summary>
-    /// Fetches cities for a given state's abbreviation (UF).
-    /// </summary>
-    /// <param name="uf">The state abbreviation (e.g., "SP", "RJ").</param>
-    /// <returns>A list of City objects.</returns>
-    public async Task<List<City>> GetCitiesByStateAsync(UF uf) {
-        var responseString = await _httpClient.GetStringAsync($"states/{uf}");
-        var stateWithCities = JsonConvert.DeserializeObject<State>(responseString);
-        return stateWithCities?.Cities;
-    }
-
-    /// <summary>
-    /// Fetches theaters for a given city ID.
+    /// Gets a list of all theaters located in a specific city.
     /// </summary>
     /// <param name="cityId">The ID of the city.</param>
-    /// <returns>A list of Theater objects.</returns>
     public async Task<List<Theater>> GetTheatersByCityAsync(string cityId) {
-        if (string.IsNullOrWhiteSpace(cityId))
-            throw new ArgumentNullException(nameof(cityId));
-
         var responseString = await _httpClient.GetStringAsync($"theaters/city/{cityId}");
-        return JsonConvert.DeserializeObject<List<Theater>>(responseString);
+        var response = JsonConvert.DeserializeObject<List<Theater>>(responseString);
+        return response ?? [];
     }
 
     /// <summary>
-    /// Fetches details for a specific event (movie).
+    /// Gets all movie sessions for a specific theater on a given day.
     /// </summary>
-    /// <param name="eventId">The ID of the event.</param>
-    /// <returns>A Movie object with event details.</returns>
-    public async Task<Movie> GetEventDetailsAsync(string eventId) {
-        if (string.IsNullOrWhiteSpace(eventId))
-            throw new ArgumentNullException(nameof(eventId));
+    /// <param name="cityId">The ID of the city where the theater is located.</param>
+    /// <param name="theaterId">The ID of the theater.</param>
+    /// <param name="date">The date to get sessions for. If null, gets all available dates.</param>
+    public async Task<List<DailyShowtime>> GetSessionsByTheaterAsync(string cityId, string theaterId, DateTime? date = null) {
+        var url = $"sessions/city/{cityId}/theater/{theaterId}";
 
-        var responseString = await _httpClient.GetStringAsync($"events/{eventId}");
-        return JsonConvert.DeserializeObject<Movie>(responseString);
+        if (date.HasValue) {
+            url += $"?date={date.Value:yyyy-MM-dd}";
+        }
+
+        var responseString = await _httpClient.GetStringAsync(url);
+        return JsonConvert.DeserializeObject<List<DailyShowtime>>(responseString) ?? [];
     }
 }
