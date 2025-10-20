@@ -1,8 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36603.0 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IngressoApi", "IngressoApi\IngressoApi.csproj", "{323A76A3-10C5-4DA9-B28A-35C97B980D75}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IngressoConsumer", "IngressoConsumer\IngressoConsumer.csproj", "{44A84A9A-9D78-4D48-8EB3-CB8CF346F5AA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RadarCine", "RadarCine\RadarCine.csproj", "{0EA5DF8D-3BF1-4D5F-9127-291C7C93BD38}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -18,5 +23,16 @@ Global
 		{44A84A9A-9D78-4D48-8EB3-CB8CF346F5AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{44A84A9A-9D78-4D48-8EB3-CB8CF346F5AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{44A84A9A-9D78-4D48-8EB3-CB8CF346F5AA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0EA5DF8D-3BF1-4D5F-9127-291C7C93BD38}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0EA5DF8D-3BF1-4D5F-9127-291C7C93BD38}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0EA5DF8D-3BF1-4D5F-9127-291C7C93BD38}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{0EA5DF8D-3BF1-4D5F-9127-291C7C93BD38}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0EA5DF8D-3BF1-4D5F-9127-291C7C93BD38}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {815E8B52-15B5-45F9-8FB6-27A98A13FF49}
 	EndGlobalSection
 EndGlobal

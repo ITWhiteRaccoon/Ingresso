@@ -5,18 +5,50 @@ namespace IngressoApi.Models;
 /// <summary>
 /// Represents a State, containing its name, abbreviation (UF), and a list of its cities.
 /// </summary>
-public class State {
+public class State : IEquatable<State> {
     [JsonProperty("name")] public string Name { get; set; }
     [JsonProperty("uf")] public string Uf { get; set; }
     [JsonProperty("cities")] public List<City> Cities { get; set; }
+
+    public bool Equals(State? other) {
+        if (other is null) return false;
+        if (ReferenceEquals(this, other)) return true;
+        return Name.Equals(other.Name) && Uf.Equals(other.Uf);
+    }
+
+    public override bool Equals(object? obj) {
+        return obj is State state && Equals(state);
+    }
+
+    public override int GetHashCode() {
+        return HashCode.Combine(Name, Uf);
+    }
+
+    public override string ToString() => Name;
 }
 
 /// <summary>
 /// Represents a City, containing its unique ID and name.
 /// </summary>
-public class City {
+public class City : IEquatable<City> {
     [JsonProperty("id")] public string Id { get; set; }
     [JsonProperty("name")] public string Name { get; set; }
+
+    public bool Equals(City? other) {
+        if (other is null) return false;
+        if (ReferenceEquals(this, other)) return true;
+        return Id == other.Id && Name == other.Name;
+    }
+
+    public override bool Equals(object? obj) {
+        return obj is City city && Equals(city);
+    }
+
+    public override int GetHashCode() {
+        return HashCode.Combine(Id, Name);
+    }
+
+    public override string ToString() => Name;
 }
 
 /// <summary>

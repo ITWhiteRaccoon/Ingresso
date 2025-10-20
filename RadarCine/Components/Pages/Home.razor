@@ -1,0 +1,39 @@
+﻿@page "/"
+
+@using IngressoApi.Models
+@using IngressoApi.Services
+@inject IngressoClient ApiClient
+
+<MudGrid Spacing="3">
+
+    <MudItem xs="12">
+        <MudText Typo="Typo.h4">Teste de Seletor (com Classe Local)</MudText>
+    </MudItem>
+
+    <MudItem xs="12">
+        <MudText Typo="Typo.h5">Select test</MudText>
+        @if (_isLoadingStates) {
+            <MudText Typo="Typo.body1">Loading states...</MudText>
+        }
+        else {
+            <MudSelect @bind-Value="_selectedState" T="State" Label="Selecione um Estado">
+                @foreach (var state in _allStates) {
+                    <MudSelectItem T="State" Value="@state">@state</MudSelectItem>
+                }
+            </MudSelect>
+        }
+    </MudItem>
+
+</MudGrid>
+
+@code {
+    private bool _isLoadingStates = true;
+    private List<State> _allStates = [];
+    private State _selectedState;
+
+    protected override async Task OnInitializedAsync() {
+        _allStates = await ApiClient.GetAllStatesWithCitiesAsync();
+        _isLoadingStates = false;
+    }
+
+}
