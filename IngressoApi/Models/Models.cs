@@ -5,7 +5,7 @@ namespace IngressoApi.Models;
 /// <summary>
 /// Represents a State, containing its name, abbreviation (UF), and a list of its cities.
 /// </summary>
-public class State : IEquatable<State> {
+public class State : IEquatable<State>, IComparable<State> {
     [JsonProperty("name")] public string Name { get; set; }
     [JsonProperty("uf")] public string Uf { get; set; }
     [JsonProperty("cities")] public List<City> Cities { get; set; }
@@ -13,15 +13,22 @@ public class State : IEquatable<State> {
     public bool Equals(State? other) {
         if (other is null) return false;
         if (ReferenceEquals(this, other)) return true;
-        return Name.Equals(other.Name) && Uf.Equals(other.Uf);
+        return Name == other.Name && Uf == other.Uf;
     }
 
     public override bool Equals(object? obj) {
-        return obj is State state && Equals(state);
+        if (obj is null) return false;
+        if (ReferenceEquals(this, obj)) return true;
+        if (obj.GetType() != GetType()) return false;
+        return Equals((State)obj);
     }
 
-    public override int GetHashCode() {
-        return HashCode.Combine(Name, Uf);
+    public override int GetHashCode() => HashCode.Combine(Name, Uf);
+
+    public int CompareTo(State? other) {
+        if (ReferenceEquals(this, other)) return 0;
+        if (other is null) return 1;
+        return string.Compare(Name, other.Name, StringComparison.Ordinal);
     }
 
     public override string ToString() => Name;
@@ -30,22 +37,29 @@ public class State : IEquatable<State> {
 /// <summary>
 /// Represents a City, containing its unique ID and name.
 /// </summary>
-public class City : IEquatable<City> {
+public class City : IEquatable<City>, IComparable<City> {
     [JsonProperty("id")] public string Id { get; set; }
     [JsonProperty("name")] public string Name { get; set; }
 
     public bool Equals(City? other) {
         if (other is null) return false;
         if (ReferenceEquals(this, other)) return true;
-        return Id == other.Id && Name == other.Name;
+        return Id == other.Id;
     }
 
     public override bool Equals(object? obj) {
-        return obj is City city && Equals(city);
+        if (obj is null) return false;
+        if (ReferenceEquals(this, obj)) return true;
+        if (obj.GetType() != GetType()) return false;
+        return Equals((City)obj);
     }
 
-    public override int GetHashCode() {
-        return HashCode.Combine(Id, Name);
+    public override int GetHashCode() => Id.GetHashCode();
+
+    public int CompareTo(City? other) {
+        if (ReferenceEquals(this, other)) return 0;
+        if (other is null) return 1;
+        return string.Compare(Name, other.Name, StringComparison.Ordinal);
     }
 
     public override string ToString() => Name;
@@ -59,8 +73,8 @@ public class DailyShowtime {
     [JsonProperty("dateFormatted")] public string DateFormatted { get; set; }
     [JsonProperty("dayOfWeek")] public string DayOfWeek { get; set; }
     [JsonProperty("isToday")] public bool IsToday { get; set; }
-    [JsonProperty("movies")] public List<MovieShowtime> Movies { get; set; }
-    [JsonProperty("sessionTypes")] public List<string> SessionTypes { get; set; } // Can be null
+    [JsonProperty("movies")] public ICollection<MovieShowtime> Movies { get; set; }
+    [JsonProperty("sessionTypes")] public ICollection<string> SessionTypes { get; set; } // Can be null
 }
 
 /// <summary>
@@ -87,15 +101,15 @@ public class MovieShowtime {
     public string NationalSiteURLByTheater { get; set; }
 
     [JsonProperty("ancineId")] public string AncineId { get; set; }
-    [JsonProperty("images")] public List<Image> Images { get; set; }
-    [JsonProperty("trailers")] public List<Trailer> Trailers { get; set; }
-    [JsonProperty("genres")] public List<string> Genres { get; set; }
-    [JsonProperty("ratingDescriptors")] public List<string> RatingDescriptors { get; set; }
-    [JsonProperty("accessibilityHubs")] public List<AccessibilityHub> AccessibilityHubs { get; set; }
-    [JsonProperty("tags")] public List<string> Tags { get; set; }
-    [JsonProperty("completeTags")] public List<TagDetails> CompleteTags { get; set; }
-    [JsonProperty("rooms")] public List<RoomShowtime> Rooms { get; set; }
-    [JsonProperty("sessionTypes")] public List<SessionTypeDetails> SessionTypes { get; set; } // Can be null
+    [JsonProperty("images")] public ICollection<Image> Images { get; set; }
+    [JsonProperty("trailers")] public ICollection<Trailer> Trailers { get; set; }
+    [JsonProperty("genres")] public ICollection<string> Genres { get; set; }
+    [JsonProperty("ratingDescriptors")] public ICollection<string> RatingDescriptors { get; set; }
+    [JsonProperty("accessibilityHubs")] public ICollection<AccessibilityHub> AccessibilityHubs { get; set; }
+    [JsonProperty("tags")] public ICollection<string> Tags { get; set; }
+    [JsonProperty("completeTags")] public ICollection<TagDetails> CompleteTags { get; set; }
+    [JsonProperty("rooms")] public ICollection<RoomShowtime> Rooms { get; set; }
+    [JsonProperty("sessionTypes")] public ICollection<SessionTypeDetails> SessionTypes { get; set; } // Can be null
 }
 
 /// <summary>
@@ -114,7 +128,7 @@ public class AccessibilityHub {
     [JsonProperty("name")] public string Name { get; set; }
     [JsonProperty("description")] public string Description { get; set; }
     [JsonProperty("url")] public string Url { get; set; }
-    [JsonProperty("resources")] public List<AccessibilityResource> Resources { get; set; }
+    [JsonProperty("resources")] public ICollection<AccessibilityResource> Resources { get; set; }
 }
 
 /// <summary>
@@ -161,8 +175,8 @@ public class TypeDescription {
 /// </summary>
 public class RoomShowtime {
     [JsonProperty("name")] public string Name { get; set; }
-    [JsonProperty("type")] public List<string>? Type { get; set; }
-    [JsonProperty("sessions")] public List<Session> Sessions { get; set; }
+    [JsonProperty("type")] public ICollection<string>? Type { get; set; }
+    [JsonProperty("sessions")] public ICollection<Session> Sessions { get; set; }
 }
 
 /// <summary>
@@ -171,15 +185,13 @@ public class RoomShowtime {
 public class Session {
     [JsonProperty("id")] public string Id { get; set; }
     [JsonProperty("time")] public string Time { get; set; }
-    [JsonProperty("type")] public List<string> Type { get; set; } // e.g., ["3D", "VIP"]
+    [JsonProperty("type")] public ICollection<string> Type { get; set; } // e.g., ["3D", "VIP"]
 }
-
-// --- Corrected Theater Models ---
 
 /// <summary>
 /// Represents a detailed Theater object, matching the API response.
 /// </summary>
-public class Theater {
+public class Theater : IEquatable<Theater>, IComparable<Theater> {
     [JsonProperty("id")] public string Id { get; set; }
     [JsonProperty("name")] public string Name { get; set; }
     [JsonProperty("urlKey")] public string UrlKey { get; set; }
@@ -190,7 +202,30 @@ public class Theater {
     [JsonProperty("properties")] public TheaterProperties Properties { get; set; }
     [JsonProperty("functionalities")] public TheaterFunctionalities Functionalities { get; set; }
     [JsonProperty("geolocation")] public Geolocation Geolocation { get; set; }
-    [JsonProperty("rooms")] public List<TheaterRoom> Rooms { get; set; }
+    [JsonProperty("rooms")] public ICollection<TheaterRoom> Rooms { get; set; }
+
+    public bool Equals(Theater? other) {
+        if (other is null) return false;
+        if (ReferenceEquals(this, other)) return true;
+        return Id == other.Id;
+    }
+
+    public override bool Equals(object? obj) {
+        if (obj is null) return false;
+        if (ReferenceEquals(this, obj)) return true;
+        if (obj.GetType() != GetType()) return false;
+        return Equals((Theater)obj);
+    }
+
+    public override int GetHashCode() => Id.GetHashCode();
+
+    public int CompareTo(Theater? other) {
+        if (ReferenceEquals(this, other)) return 0;
+        if (other is null) return 1;
+        return string.Compare(Name, other.Name, StringComparison.Ordinal);
+    }
+
+    public override string ToString() => Name;
 }
 
 public class TheaterProperties {
@@ -236,6 +271,6 @@ public class Image {
 /// A helper class to deserialize the API's list response for theaters.
 /// </summary>
 internal class TheaterListResponse {
-    [JsonProperty("items")] public List<Theater> Items { get; set; }
+    [JsonProperty("items")] public ICollection<Theater> Items { get; set; }
     [JsonProperty("count")] public int Count { get; set; }
 }

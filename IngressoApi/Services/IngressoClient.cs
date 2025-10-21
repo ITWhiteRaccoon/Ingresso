@@ -22,18 +22,18 @@ public class IngressoClient {
     /// Gets a list of all available states and their contained cities.
     /// Perfect for populating State and City dropdowns.
     /// </summary>
-    public async Task<List<State>> GetAllStatesWithCitiesAsync() {
+    public async Task<ICollection<State>> GetAllStatesWithCitiesAsync() {
         var responseString = await _httpClient.GetStringAsync("states");
-        return JsonConvert.DeserializeObject<List<State>>(responseString) ?? [];
+        return JsonConvert.DeserializeObject<ICollection<State>>(responseString) ?? [];
     }
 
     /// <summary>
     /// Gets a list of all theaters located in a specific city.
     /// </summary>
     /// <param name="cityId">The ID of the city.</param>
-    public async Task<List<Theater>> GetTheatersByCityAsync(string cityId) {
+    public async Task<ICollection<Theater>> GetTheatersByCityAsync(string cityId) {
         var responseString = await _httpClient.GetStringAsync($"theaters/city/{cityId}");
-        var response = JsonConvert.DeserializeObject<List<Theater>>(responseString);
+        var response = JsonConvert.DeserializeObject<ICollection<Theater>>(responseString);
         return response ?? [];
     }
 
@@ -43,7 +43,7 @@ public class IngressoClient {
     /// <param name="cityId">The ID of the city where the theater is located.</param>
     /// <param name="theaterId">The ID of the theater.</param>
     /// <param name="date">The date to get sessions for. If null, gets all available dates.</param>
-    public async Task<List<DailyShowtime>> GetSessionsByTheaterAsync(string cityId, string theaterId, DateTime? date = null) {
+    public async Task<ICollection<DailyShowtime>> GetSessionsByTheaterAsync(string cityId, string theaterId, DateTime? date = null) {
         var url = $"sessions/city/{cityId}/theater/{theaterId}";
 
         if (date.HasValue) {
@@ -51,6 +51,6 @@ public class IngressoClient {
         }
 
         var responseString = await _httpClient.GetStringAsync(url);
-        return JsonConvert.DeserializeObject<List<DailyShowtime>>(responseString) ?? [];
+        return JsonConvert.DeserializeObject<ICollection<DailyShowtime>>(responseString) ?? [];
     }
 }

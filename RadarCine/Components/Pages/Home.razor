@@ -1,39 +1,93 @@
 ﻿@page "/"
 
+@using Microsoft.Extensions.Localization
 @using IngressoApi.Models
 @using IngressoApi.Services
+
+@inject IStringLocalizer<Home> Localizer
 @inject IngressoClient ApiClient
 
-<MudGrid Spacing="3">
+<MudGrid Spacing="5">
 
     <MudItem xs="12">
-        <MudText Typo="Typo.h4">Teste de Seletor (com Classe Local)</MudText>
+        <MudText Typo="Typo.h4">@Localizer["PageTitle"]</MudText>
+        <MudText Class="mb-4" Typo="Typo.subtitle1">@Localizer["PageSubtitle"]</MudText>
     </MudItem>
 
     <MudItem xs="12">
-        <MudText Typo="Typo.h5">Select test</MudText>
-        @if (_isLoadingStates) {
-            <MudText Typo="Typo.body1">Loading states...</MudText>
-        }
-        else {
-            <MudSelect @bind-Value="_selectedState" T="State" Label="Selecione um Estado">
-                @foreach (var state in _allStates) {
-                    <MudSelectItem T="State" Value="@state">@state</MudSelectItem>
+        <MudSelect MultiSelection="true" T="State" Disabled="_allStates.Count <= 0" Variant="Variant.Outlined"
+                   SelectedValuesChanged="OnStateSelectionChanged" Label="@Localizer["StateSelectLabel"]">
+            @foreach (var state in _allStates) {
+                <MudSelectItem T="State" Value="@state">@state</MudSelectItem>
+            }
+        </MudSelect>
+    </MudItem>
+
+    <MudItem xs="12">
+        <MudSelect MultiSelection="true" T="City" Disabled="_allCities.Count <= 0" Variant="Variant.Outlined"
+                   SelectedValuesChanged="OnCitySelectionChanged" Label="@Localizer["CitySelectLabel"]">
+            @foreach (var city in _allCities) {
+                <MudSelectItem T="City" Value="@city">@city</MudSelectItem>
+            }
+        </MudSelect>
+    </MudItem>
+
+    <MudItem xs="12">
+        <MudSelect MultiSelection="true" T="Theater" Disabled="_allTheaters.Count <= 0" Variant="Variant.Outlined"
+                   Label="@Localizer["TheaterSelectLabel"]">
+            @{
+                var currentUf = "";
+                var currentCity = "";
+            }
+            @foreach (var theater in _allTheaters) {
+                if (theater.Uf != currentUf || theater.CityName != currentCity) {
+                    currentUf = theater.Uf;
+                    currentCity = theater.CityName;
+                    <MudSelectItem T="Theater" Value="@theater" Disabled="true" Class="font-weight-bold">
+                        @theater.Uf - @theater.CityName
+                    </MudSelectItem>
                 }
-            </MudSelect>
-        }
+
+                <MudSelectItem T="Theater" Value="@theater">@theater</MudSelectItem>
+            }
+        </MudSelect>
     </MudItem>
 
 </MudGrid>
 
 @code {
-    private bool _isLoadingStates = true;
-    private List<State> _allStates = [];
-    private State _selectedState;
+    private ICollection<State> _allStates = new SortedSet<State>();
+    private ICollection<City> _allCities = new SortedSet<City>();
+    private ICollection<Theater> _allTheaters = new List<Theater>();
 
     protected override async Task OnInitializedAsync() {
         _allStates = await ApiClient.GetAllStatesWithCitiesAsync();
-        _isLoadingStates = false;
+    }
+
+    protected async Task OnStateSelectionChanged(IEnumerable<State> selectedStates) {
+        _allCities.Clear();
+        _allTheaters.Clear();
+
+        foreach (var state in selectedStates) {
+            foreach (var city in state.Cities) {
+                _allCities.Add(city);
+            }
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    protected async Task OnCitySelectionChanged(IEnumerable<City> selectedCities) {
+        _allTheaters.Clear();
+
+        foreach (var city in selectedCities) {
+            var cityTheaters = await ApiClient.GetTheatersByCityAsync(city.Id);
+            foreach (var theater in cityTheaters) {
+                _allTheaters.Add(theater);
+            }
+        }
+
+        await InvokeAsync(StateHasChanged);
     }
 
 }

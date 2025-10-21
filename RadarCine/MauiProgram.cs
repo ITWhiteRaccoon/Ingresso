@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Globalization;
+using Microsoft.Extensions.Logging;
 using MudBlazor.Services;
 using IngressoApi.Services;
 
@@ -17,6 +18,10 @@ namespace RadarCine {
             builder.Logging.AddDebug();
 #endif
 
+            builder.Services.AddLocalization(options => options.ResourcesPath = "Resources/Localization");
+            CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("pt-BR");
+            CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("pt-BR");
+            
             builder.Services.AddMudServices();
 
             builder.Services.AddSingleton(sp =>
