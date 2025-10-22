@@ -7,87 +7,154 @@
 @inject IStringLocalizer<Home> Localizer
 @inject IngressoClient ApiClient
 
-<MudGrid Spacing="5">
+<style>
+    .content-container {
+        width: 100%;
+        padding: 0 1rem;
+        box-sizing: border-box;
 
-    <MudItem xs="12">
-        <MudText Typo="Typo.h4">@Localizer["PageTitle"]</MudText>
-        <MudText Class="mb-4" Typo="Typo.subtitle1">@Localizer["PageSubtitle"]</MudText>
-    </MudItem>
+        max-width: 800px;
 
-    <MudItem xs="12">
-        <MudSelect MultiSelection="true" T="State" Disabled="_allStates.Count <= 0" Variant="Variant.Outlined"
-                   SelectedValuesChanged="OnStateSelectionChanged" Label="@Localizer["StateSelectLabel"]">
-            @foreach (var state in _allStates) {
-                <MudSelectItem T="State" Value="@state">@state</MudSelectItem>
-            }
-        </MudSelect>
-    </MudItem>
+        margin-left: auto;
+        margin-right: auto;
+    }
+</style>
 
-    <MudItem xs="12">
-        <MudSelect MultiSelection="true" T="City" Disabled="_allCities.Count <= 0" Variant="Variant.Outlined"
-                   SelectedValuesChanged="OnCitySelectionChanged" Label="@Localizer["CitySelectLabel"]">
-            @foreach (var city in _allCities) {
-                <MudSelectItem T="City" Value="@city">@city</MudSelectItem>
-            }
-        </MudSelect>
-    </MudItem>
+<div class="content-container">
+    <FluentGrid Spacing="2">
+        <FluentGridItem xs="12">
+            <h2>@Localizer["PageTitle"]</h2>
+            <p>@Localizer["PageSubtitle"]</p>
+        </FluentGridItem>
 
-    <MudItem xs="12">
-        <MudSelect MultiSelection="true" T="Theater" Disabled="_allTheaters.Count <= 0" Variant="Variant.Outlined"
-                   Label="@Localizer["TheaterSelectLabel"]">
-            @{
-                var currentUf = "";
-                var currentCity = "";
-            }
-            @foreach (var theater in _allTheaters) {
-                if (theater.Uf != currentUf || theater.CityName != currentCity) {
-                    currentUf = theater.Uf;
-                    currentCity = theater.CityName;
-                    <MudSelectItem T="Theater" Value="@theater" Disabled="true" Class="font-weight-bold">
-                        @theater.Uf - @theater.CityName
-                    </MudSelectItem>
-                }
+        <FluentGridItem xs="12">
+            <FluentAutocomplete TOption="State"
+                                Label="@Localizer["StateSelectLabel"]"
+                                Multiple="true"
+                                KeepOpen="true"
+                                Disabled="!_allStates.Any()"
+                                Items="_filteredStates"
+                                Position="SelectPosition.Below"
+                                OnOptionsSearch="e => AutocompleteFilter(e, _allStates, ref _filteredStates)"
+                                SelectedOptions="_selectedStates"
+                                SelectedOptionsChanged="OnStateSelectionChanged"/>
+        </FluentGridItem>
 
-                <MudSelectItem T="Theater" Value="@theater">@theater</MudSelectItem>
-            }
-        </MudSelect>
-    </MudItem>
+        <FluentGridItem xs="12">
+            <FluentAutocomplete TOption="City"
+                                Label="@Localizer["CitySelectLabel"]"
+                                Multiple="true"
+                                KeepOpen="true"
+                                Disabled="!_filteredCities.Any()"
+                                Items="_filteredCities"
+                                Position="SelectPosition.Below"
+                                OnOptionsSearch="e => AutocompleteFilter(e, _allCities, ref _filteredCities)"
+                                SelectedOptions="_selectedCities"
+                                SelectedOptionsChanged="OnCitySelectionChanged"/>
+        </FluentGridItem>
 
-</MudGrid>
+        <FluentGridItem xs="12">
+            <FluentAutocomplete TOption="TheaterDropdownViewModel"
+                                Label="@Localizer["TheaterSelectLabel"]"
+                                Multiple="true"
+                                KeepOpen="true"
+                                Disabled="!_filteredTheaters.Any()"
+                                Items="_filteredTheaters"
+                                Position="SelectPosition.Below"
+                                OnOptionsSearch="e => AutocompleteFilter(e, _allTheaters, ref _filteredTheaters)"
+                                SelectedOptions="_selectedTheaters"
+                                SelectedOptionsChanged="theaters => _selectedTheaters = theaters.ToList()"
+                                OptionTemplate="RenderTheaterTemplate"
+                                OptionDisabled="option => option.IsHeader"/>
+        </FluentGridItem>
+    </FluentGrid>
+</div>
 
 @code {
-    private ICollection<State> _allStates = new SortedSet<State>();
-    private ICollection<City> _allCities = new SortedSet<City>();
-    private ICollection<Theater> _allTheaters = new List<Theater>();
+    private ICollection<State> _allStates = new List<State>();
+    private ICollection<City> _allCities = new List<City>();
+    private ICollection<TheaterDropdownViewModel> _allTheaters = new List<TheaterDropdownViewModel>();
+
+    private ICollection<State> _filteredStates = new List<State>();
+    private ICollection<City> _filteredCities = new List<City>();
+    private ICollection<TheaterDropdownViewModel> _filteredTheaters = new List<TheaterDropdownViewModel>();
+
+    private ICollection<State> _selectedStates = new List<State>();
+    private ICollection<City> _selectedCities = new List<City>();
+    private ICollection<TheaterDropdownViewModel> _selectedTheaters = new List<TheaterDropdownViewModel>();
 
     protected override async Task OnInitializedAsync() {
         _allStates = await ApiClient.GetAllStatesWithCitiesAsync();
+        _filteredStates = _allStates;
     }
 
-    protected async Task OnStateSelectionChanged(IEnumerable<State> selectedStates) {
+    private void OnStateSelectionChanged(IEnumerable<State> states) {
+        // 1. Limpar as listas
+        _selectedStates.Clear();
         _allCities.Clear();
+        _selectedCities.Clear();
         _allTheaters.Clear();
+        _selectedTheaters.Clear();
 
-        foreach (var state in selectedStates) {
-            foreach (var city in state.Cities) {
-                _allCities.Add(city);
-            }
+        // 2. Repopular a próxima lista (allCities) e atualizar a seleção de estados
+        foreach (var state in states) {
+            _selectedStates.Add(state);
+            _allCities = _allCities.Union(state.Cities).ToList();
         }
 
-        await InvokeAsync(StateHasChanged);
+        // 3. Atualizar as listas filtradas para a UI
+        _filteredCities = _allCities;
+        _filteredTheaters = _allTheaters;
     }
 
-    protected async Task OnCitySelectionChanged(IEnumerable<City> selectedCities) {
+    private async Task OnCitySelectionChanged(IEnumerable<City> cities) {
+        _selectedCities.Clear();
         _allTheaters.Clear();
+        _selectedTheaters.Clear();
 
-        foreach (var city in selectedCities) {
-            var cityTheaters = await ApiClient.GetTheatersByCityAsync(city.Id);
-            foreach (var theater in cityTheaters) {
-                _allTheaters.Add(theater);
+        foreach (var city in cities) {
+            _selectedCities.Add(city);
+
+            _allTheaters.Add(new TheaterDropdownViewModel { Theater = new Theater { CityName = city.Name }, IsHeader = true });
+            var theatersInCity = await ApiClient.GetTheatersByCityAsync(city.Id);
+            foreach (var theater in theatersInCity) {
+                _allTheaters.Add(new TheaterDropdownViewModel { Theater = theater, IsHeader = false });
             }
         }
 
-        await InvokeAsync(StateHasChanged);
+        _filteredTheaters = _allTheaters;
+
+        await InvokeAsync(StateHasChanged); // Chamar StateHasChanged por causa do await
+    }
+
+    private RenderFragment<TheaterDropdownViewModel> RenderTheaterTemplate => theater =>
+        @<div>
+            @if (theater.IsHeader) {
+                <div style="font-weight: bold; pointer-events: none;">
+                    @theater.Theater.CityName
+                </div>
+            }
+            else {
+                <div style="padding-left: 1rem;">@theater.Theater.Name</div>
+            }
+        </div>;
+
+    private static void AutocompleteFilter<T>(OptionsSearchEventArgs<T> eventArgs, ICollection<T> allOptions, ref ICollection<T> filteredOptions) {
+        if (string.IsNullOrWhiteSpace(eventArgs.Text)) {
+            filteredOptions = allOptions;
+        }
+        else {
+            filteredOptions = allOptions
+                .Where(option => option.ToString().Contains(eventArgs.Text, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+    }
+
+    private class TheaterDropdownViewModel {
+        public Theater Theater { get; set; } = default!;
+        public bool IsHeader { get; set; }
+
+        public override string ToString() => Theater.Name;
     }
 
 }

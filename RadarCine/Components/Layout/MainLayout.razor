@@ -1,19 +1,4 @@
 ﻿@inherits LayoutComponentBase
 
-@* Required *@
-<MudThemeProvider />
-<MudPopoverProvider />
-
-@* Needed for dialogs *@
-<MudDialogProvider />
-
-@* Needed for snackbars *@
-<MudSnackbarProvider />
-
-<MudLayout>
-    <MudMainContent>
-        <MudContainer MaxWidth="MaxWidth.Medium" Class="my-4 pa-4">
-            @Body
-        </MudContainer>
-    </MudMainContent>
-</MudLayout>
+<FluentDesignTheme StorageName="theme" Mode="DesignThemeModes.Light"/>
+@Body

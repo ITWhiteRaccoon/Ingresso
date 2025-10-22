@@ -1,6 +1,6 @@
 ﻿using System.Globalization;
 using Microsoft.Extensions.Logging;
-using MudBlazor.Services;
+using Microsoft.FluentUI.AspNetCore.Components;
 using IngressoApi.Services;
 
 namespace RadarCine {
@@ -21,10 +21,10 @@ namespace RadarCine {
             builder.Services.AddLocalization(options => options.ResourcesPath = "Resources/Localization");
             CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("pt-BR");
             CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("pt-BR");
-            
-            builder.Services.AddMudServices();
 
-            builder.Services.AddSingleton(sp =>
+            builder.Services.AddFluentUIComponents();
+            
+            builder.Services.AddSingleton(_ =>
                 new IngressoClient(
                     "v0",
                     "github.com_itwhiteraccoon"
