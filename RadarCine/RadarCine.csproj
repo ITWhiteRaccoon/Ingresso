@@ -78,9 +78,13 @@
         <Generator>ResXFileCodeGenerator</Generator>
         <LastGenOutput>Home.pt-BR.Designer.cs</LastGenOutput>
       </EmbeddedResource>
-      <EmbeddedResource Update="Resources\Localization\Components\Pages\Home.pt-BR.resx">
+      <EmbeddedResource Update="Resources\Localization\Components\Shared\SetupView.pt-BR.resx">
         <Generator>ResXFileCodeGenerator</Generator>
         <LastGenOutput>Home.pt-BR.Designer.cs</LastGenOutput>
+      </EmbeddedResource>
+      <EmbeddedResource Update="Resources\Localization\Components\Pages\Home.resx">
+        <Generator>ResXFileCodeGenerator</Generator>
+        <LastGenOutput>Home.Designer.cs</LastGenOutput>
       </EmbeddedResource>
     </ItemGroup>
 
@@ -90,10 +94,11 @@
         <AutoGen>True</AutoGen>
         <DependentUpon>Home.pt-BR.resx</DependentUpon>
       </Compile>
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Resources\Localization\Components\" />
+      <Compile Update="Resources\Localization\Components\Pages\Home.Designer.cs">
+        <DesignTime>True</DesignTime>
+        <AutoGen>True</AutoGen>
+        <DependentUpon>Home.resx</DependentUpon>
+      </Compile>
     </ItemGroup>
 
 </Project>

@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.FluentUI.AspNetCore.Components;
 using IngressoApi.Services;
+using RadarCine.Services;
 
 namespace RadarCine {
     public static class MauiProgram {
@@ -30,6 +31,8 @@ namespace RadarCine {
                     "github.com_itwhiteraccoon"
                 )
             );
+            
+            builder.Services.AddSingleton<UserSelectionService>();
 
             return builder.Build();
         }

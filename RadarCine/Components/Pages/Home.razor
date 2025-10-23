@@ -1,160 +1,98 @@
-﻿@page "/"
+@page "/"
 
 @using Microsoft.Extensions.Localization
-@using IngressoApi.Models
-@using IngressoApi.Services
+@using RadarCine.Components.Shared
 
 @inject IStringLocalizer<Home> Localizer
-@inject IngressoClient ApiClient
 
 <style>
-    .content-container {
+    .home-container {
+        /* Centraliza tudo verticalmente */
+        display: flex;
+        flex-direction: column;
         width: 100%;
-        padding: 0 1rem;
-        box-sizing: border-box;
-
         max-width: 800px;
-
         margin-left: auto;
         margin-right: auto;
+        padding: 0 1rem;
+        box-sizing: border-box;
+    }
+
+    .welcome-header {
+        /* Começa no centro da tela */
+        padding-top: 30vh;
+        transition: all 0.6s ease-in-out;
+    }
+
+    .welcome-header h1 {
+        transition: all 0.4s ease-out;
+    }
+
+    .welcome-header h2 {
+        transition: all 0.6s ease-in-out;
+    }
+
+    .welcome-header p {
+        opacity: 0;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease-in-out 0.3s, opacity 0.3s ease-in 0.3s;
+    }
+
+    .welcome-button {
+        margin-top: 2rem;
+        transition: all 0.4s ease-out;
+    }
+
+    .is-configuring .welcome-header {
+        padding-top: 2rem;
+        text-align: left;
+    }
+
+    .is-configuring .welcome-header h1 {
+        opacity: 0;
+        margin: 0;
+    }
+
+    .is-configuring .welcome-header p {
+        opacity: 1;
+        max-height: 70vh;
+    }
+
+    .is-configuring .welcome-button {
+        opacity: 0;
+        max-height: 0;
+        overflow: hidden;
     }
 </style>
 
-<div class="content-container">
-    <FluentGrid Spacing="2">
-        <FluentGridItem xs="12">
-            <h2>@Localizer["PageTitle"]</h2>
-            <p>@Localizer["PageSubtitle"]</p>
-        </FluentGridItem>
+<div class="home-container @(_isConfiguring ? "is-configuring" : "")">
 
-        <FluentGridItem xs="12">
-            <FluentAutocomplete TOption="State"
-                                Label="@Localizer["StateSelectLabel"]"
-                                Multiple="true"
-                                KeepOpen="true"
-                                Disabled="!_allStates.Any()"
-                                Items="_filteredStates"
-                                Position="SelectPosition.Below"
-                                OnOptionsSearch="e => AutocompleteFilter(e, _allStates, ref _filteredStates)"
-                                SelectedOptions="_selectedStates"
-                                SelectedOptionsChanged="OnStateSelectionChanged"/>
-        </FluentGridItem>
+    <div class="welcome-header">
+        <h1>@Localizer["Greeting"]</h1>
 
-        <FluentGridItem xs="12">
-            <FluentAutocomplete TOption="City"
-                                Label="@Localizer["CitySelectLabel"]"
-                                Multiple="true"
-                                KeepOpen="true"
-                                Disabled="!_filteredCities.Any()"
-                                Items="_filteredCities"
-                                Position="SelectPosition.Below"
-                                OnOptionsSearch="e => AutocompleteFilter(e, _allCities, ref _filteredCities)"
-                                SelectedOptions="_selectedCities"
-                                SelectedOptionsChanged="OnCitySelectionChanged"/>
-        </FluentGridItem>
+        <h2>@Localizer["PageTitle"]</h2>
 
-        <FluentGridItem xs="12">
-            <FluentAutocomplete TOption="TheaterDropdownViewModel"
-                                Label="@Localizer["TheaterSelectLabel"]"
-                                Multiple="true"
-                                KeepOpen="true"
-                                Disabled="!_filteredTheaters.Any()"
-                                Items="_filteredTheaters"
-                                Position="SelectPosition.Below"
-                                OnOptionsSearch="e => AutocompleteFilter(e, _allTheaters, ref _filteredTheaters)"
-                                SelectedOptions="_selectedTheaters"
-                                SelectedOptionsChanged="theaters => _selectedTheaters = theaters.ToList()"
-                                OptionTemplate="RenderTheaterTemplate"
-                                OptionDisabled="option => option.IsHeader"/>
-        </FluentGridItem>
-    </FluentGrid>
+        <p>@Localizer["PageSubtitle"]</p>
+    </div>
+
+    <div class="welcome-button">
+        <FluentButton Appearance="Appearance.Accent" OnClick="StartConfiguration">
+            Próximo
+        </FluentButton>
+    </div>
+
+    @* O componente de configuração só é renderizado quando ativado *@
+    @if (_isConfiguring) {
+        <SetupView/>
+    }
 </div>
 
 @code {
-    private ICollection<State> _allStates = new List<State>();
-    private ICollection<City> _allCities = new List<City>();
-    private ICollection<TheaterDropdownViewModel> _allTheaters = new List<TheaterDropdownViewModel>();
+    private bool _isConfiguring = false;
 
-    private ICollection<State> _filteredStates = new List<State>();
-    private ICollection<City> _filteredCities = new List<City>();
-    private ICollection<TheaterDropdownViewModel> _filteredTheaters = new List<TheaterDropdownViewModel>();
-
-    private ICollection<State> _selectedStates = new List<State>();
-    private ICollection<City> _selectedCities = new List<City>();
-    private ICollection<TheaterDropdownViewModel> _selectedTheaters = new List<TheaterDropdownViewModel>();
-
-    protected override async Task OnInitializedAsync() {
-        _allStates = await ApiClient.GetAllStatesWithCitiesAsync();
-        _filteredStates = _allStates;
-    }
-
-    private void OnStateSelectionChanged(IEnumerable<State> states) {
-        // 1. Limpar as listas
-        _selectedStates.Clear();
-        _allCities.Clear();
-        _selectedCities.Clear();
-        _allTheaters.Clear();
-        _selectedTheaters.Clear();
-
-        // 2. Repopular a próxima lista (allCities) e atualizar a seleção de estados
-        foreach (var state in states) {
-            _selectedStates.Add(state);
-            _allCities = _allCities.Union(state.Cities).ToList();
-        }
-
-        // 3. Atualizar as listas filtradas para a UI
-        _filteredCities = _allCities;
-        _filteredTheaters = _allTheaters;
-    }
-
-    private async Task OnCitySelectionChanged(IEnumerable<City> cities) {
-        _selectedCities.Clear();
-        _allTheaters.Clear();
-        _selectedTheaters.Clear();
-
-        foreach (var city in cities) {
-            _selectedCities.Add(city);
-
-            _allTheaters.Add(new TheaterDropdownViewModel { Theater = new Theater { CityName = city.Name }, IsHeader = true });
-            var theatersInCity = await ApiClient.GetTheatersByCityAsync(city.Id);
-            foreach (var theater in theatersInCity) {
-                _allTheaters.Add(new TheaterDropdownViewModel { Theater = theater, IsHeader = false });
-            }
-        }
-
-        _filteredTheaters = _allTheaters;
-
-        await InvokeAsync(StateHasChanged); // Chamar StateHasChanged por causa do await
-    }
-
-    private RenderFragment<TheaterDropdownViewModel> RenderTheaterTemplate => theater =>
-        @<div>
-            @if (theater.IsHeader) {
-                <div style="font-weight: bold; pointer-events: none;">
-                    @theater.Theater.CityName
-                </div>
-            }
-            else {
-                <div style="padding-left: 1rem;">@theater.Theater.Name</div>
-            }
-        </div>;
-
-    private static void AutocompleteFilter<T>(OptionsSearchEventArgs<T> eventArgs, ICollection<T> allOptions, ref ICollection<T> filteredOptions) {
-        if (string.IsNullOrWhiteSpace(eventArgs.Text)) {
-            filteredOptions = allOptions;
-        }
-        else {
-            filteredOptions = allOptions
-                .Where(option => option.ToString().Contains(eventArgs.Text, StringComparison.OrdinalIgnoreCase))
-                .ToList();
-        }
-    }
-
-    private class TheaterDropdownViewModel {
-        public Theater Theater { get; set; } = default!;
-        public bool IsHeader { get; set; }
-
-        public override string ToString() => Theater.Name;
+    private void StartConfiguration() {
+        _isConfiguring = true;
     }
 
 }
