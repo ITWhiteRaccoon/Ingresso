@@ -33,6 +33,7 @@ namespace RadarCine {
             );
             
             builder.Services.AddSingleton<UserSelectionService>();
+            builder.Services.AddScoped<PageNavigator>();
 
             return builder.Build();
         }

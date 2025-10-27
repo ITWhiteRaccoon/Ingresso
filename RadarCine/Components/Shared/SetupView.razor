@@ -4,9 +4,9 @@
 @using RadarCine.Services
 
 @inject IStringLocalizer<SetupView> Localizer
-@inject IngressoClient ApiClient
 @inject UserSelectionService SelectionService
-@inject NavigationManager Navigation
+@inject PageNavigator Navigator
+@inject IngressoClient ApiClient
 
 <style>
     .setup-container {
@@ -165,7 +165,7 @@
         }
     }
 
-    private void SaveAndNavigate() {
+    private async Task SaveAndNavigate() {
         var theatersToStore = _selectedTheaters
             .Where(th => !th.IsHeader)
             .Select(th => th.Theater)
@@ -173,7 +173,7 @@
 
         SelectionService.StoreSelectedTheaters(theatersToStore);
 
-        Navigation.NavigateTo("/Movies");
+        await Navigator.NavigateWithTransitionAsync("/Movies");
     }
 
     private class TheaterDropdownViewModel {

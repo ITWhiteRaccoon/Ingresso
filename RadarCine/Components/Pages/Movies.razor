@@ -1,6 +1,97 @@
 @page "/Movies"
-<h3>Movies</h3>
+
+@using IngressoApi.Models
+@using IngressoApi.Services
+@using Microsoft.Extensions.Localization
+@using RadarCine.Services
+
+@inject IStringLocalizer<Movies> Localizer
+@inject UserSelectionService SelectionService
+@inject IngressoClient ApiClient
+
+<style>
+    .content {
+        margin-inline: 2rem;
+    }
+
+    .movie-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        align-items: stretch;
+        justify-content: space-around;
+    }
+
+    .movie-list > fluent-card {
+        padding: 0;
+    }
+
+    .cover-container {
+        position: relative;
+        width: 100%;
+        height: 16rem; /* adjust as needed */
+        overflow: hidden;
+    }
+
+    .cover-container img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .fade-bottom {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 30%; /* how much fade */
+        background: linear-gradient(to bottom, rgba(0, 0, 0, 0) 10%, rgba(255, 255, 255, 0.8) 75%, rgba(255, 255, 255, 1) 100%);
+        pointer-events: none; /* ensures overlay doesn’t block clicks */
+    }
+
+    .movie-title {
+        font-weight: bold;
+        text-align: center;
+        padding: 0.5rem 1rem;
+    }
+</style>
+
+<div class="content">
+    <h3>@Localizer["MoviesTitle"]</h3>
+
+    <div class="movie-list">
+        @foreach (var movie in movies) {
+            <FluentCard Height="auto" Width="12rem">
+                @if (movie.Images.FirstOrDefault(img => img.Type == MovieImageType.PosterPortrait) is { } poster) {
+                    <div class="cover-container">
+                        <img src="@poster.Url" alt="Cover for @movie.Title"/>
+                        <div class="fade-bottom"></div>
+                    </div>
+                }
+                else {
+                    <div>@Localizer["MovieCoverNotAvailable"]</div>
+                }
+                <div class="movie-title">@movie.Title</div>
+            </FluentCard>
+        }
+    </div>
+</div>
 
 @code {
-    
+    ICollection<DailyShowtime> moviesByDate = new List<DailyShowtime>();
+    SortedSet<MovieShowtime> movies = [];
+
+    protected override async Task OnInitializedAsync() {
+        var selectedTheater = SelectionService.SelectedTheaters[0];
+        moviesByDate = await ApiClient.GetSessionsByTheaterAsync(selectedTheater.CityId, selectedTheater.Id);
+        var selectedTypes = new HashSet<string> { "IMAX", "Vip", "CINEPIC" };
+
+        movies = new SortedSet<MovieShowtime>(
+            moviesByDate
+                .SelectMany(dailyShowtime => dailyShowtime.Movies)
+                .Where(movie => movie.SessionTypes.Any(sessionType => sessionType.Type.Any(type => selectedTypes.Contains(type))))
+        );
+    }
+
 }

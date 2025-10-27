@@ -80,7 +80,7 @@ public class DailyShowtime {
 /// <summary>
 /// Represents a single movie playing at the theater, including its details and session times.
 /// </summary>
-public class MovieShowtime {
+public class MovieShowtime : IEquatable<MovieShowtime>, IComparable<MovieShowtime> {
     [JsonProperty("id")] public string Id { get; set; }
     [JsonProperty("b2BId")] public int? B2BId { get; set; } // Nullable int
     [JsonProperty("type")] public string Type { get; set; } // e.g., "Filme"
@@ -109,7 +109,30 @@ public class MovieShowtime {
     [JsonProperty("tags")] public ICollection<string> Tags { get; set; }
     [JsonProperty("completeTags")] public ICollection<TagDetails> CompleteTags { get; set; }
     [JsonProperty("rooms")] public ICollection<RoomShowtime> Rooms { get; set; }
-    [JsonProperty("sessionTypes")] public ICollection<SessionTypeDetails> SessionTypes { get; set; } // Can be null
+    [JsonProperty("sessionTypes")] public ICollection<SessionTypes> SessionTypes { get; set; } // Can be null
+
+    public int CompareTo(MovieShowtime? other) {
+        if (ReferenceEquals(this, other)) return 0;
+        if (other is null) return 1;
+        return string.Compare(Title, other.Title, StringComparison.Ordinal);
+    }
+
+    public bool Equals(MovieShowtime? other) {
+        if (other is null) return false;
+        if (ReferenceEquals(this, other)) return true;
+        return Id == other.Id;
+    }
+
+    public override bool Equals(object? obj) {
+        if (obj is null) return false;
+        if (ReferenceEquals(this, obj)) return true;
+        if (obj.GetType() != GetType()) return false;
+        return Equals((MovieShowtime)obj);
+    }
+
+    public override int GetHashCode() {
+        return Id.GetHashCode();
+    }
 }
 
 /// <summary>
@@ -152,22 +175,9 @@ public class TagDetails {
 /// <summary>
 /// Represents detailed session type information.
 /// </summary>
-public class SessionTypeDetails {
-    [JsonProperty("id")] public int Id { get; set; }
-    [JsonProperty("name")] public string Name { get; set; }
-    [JsonProperty("alias")] public string Alias { get; set; }
-    [JsonProperty("display")] public bool Display { get; set; }
-    [JsonProperty("typeDescriptions")] public TypeDescription TypeDescriptions { get; set; }
-}
-
-/// <summary>
-/// Represents type description details for session types.
-/// </summary>
-public class TypeDescription {
-    [JsonProperty("summaryDescription")] public string SummaryDescription { get; set; }
-    [JsonProperty("summaryImage")] public string SummaryImage { get; set; }
-    [JsonProperty("detailedDescription")] public string DetailedDescription { get; set; }
-    [JsonProperty("detailedImage")] public string DetailedImage { get; set; }
+public class SessionTypes {
+    [JsonProperty("type")] public ICollection<string> Type { get; set; }
+    [JsonProperty("sessions")] public ICollection<Session> Sessions { get; set; }
 }
 
 /// <summary>
@@ -184,8 +194,15 @@ public class RoomShowtime {
 /// </summary>
 public class Session {
     [JsonProperty("id")] public string Id { get; set; }
+    [JsonProperty("price")] public decimal Price { get; set; }
+    [JsonProperty("room")] public string Room { get; set; }
+    [JsonProperty("type")] public ICollection<string> Type { get; set; }
+    [JsonProperty("date")] public SessionDate Date { get; set; }
     [JsonProperty("time")] public string Time { get; set; }
-    [JsonProperty("type")] public ICollection<string> Type { get; set; } // e.g., ["3D", "VIP"]
+}
+
+public class SessionDate {
+    [JsonProperty("localDate")] public DateTime LocalDate { get; set; }
 }
 
 /// <summary>
@@ -264,13 +281,10 @@ public class TheaterRoom {
 /// </summary>
 public class Image {
     [JsonProperty("url")] public string Url { get; set; }
-    [JsonProperty("type")] public string Type { get; set; } // e.g., "PosterPortrait", "PosterHorizontal"
+    [JsonProperty("type")] public MovieImageType Type { get; set; }
 }
 
-/// <summary>
-/// A helper class to deserialize the API's list response for theaters.
-/// </summary>
-internal class TheaterListResponse {
-    [JsonProperty("items")] public ICollection<Theater> Items { get; set; }
-    [JsonProperty("count")] public int Count { get; set; }
+public enum MovieImageType {
+    PosterPortrait,
+    PosterHorizontal
 }

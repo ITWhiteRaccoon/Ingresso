@@ -9,9 +9,11 @@ namespace IngressoApi.Services;
 /// </summary>
 public class IngressoClient {
     private readonly HttpClient _httpClient;
-
+    private readonly string _partnership;
+    
     public IngressoClient(string apiVersion, string partnership) {
-        var partnershipHandler = new PartnershipHandler(partnership);
+        _partnership = partnership;
+        var partnershipHandler = new PartnershipHandler(_partnership);
 
         _httpClient = new HttpClient(partnershipHandler) {
             BaseAddress = new Uri($"https://api-content.ingresso.com/{apiVersion}/")
@@ -44,7 +46,7 @@ public class IngressoClient {
     /// <param name="theaterId">The ID of the theater.</param>
     /// <param name="date">The date to get sessions for. If null, gets all available dates.</param>
     public async Task<ICollection<DailyShowtime>> GetSessionsByTheaterAsync(string cityId, string theaterId, DateTime? date = null) {
-        var url = $"sessions/city/{cityId}/theater/{theaterId}";
+        var url = $"sessions/city/{cityId}/theater/{theaterId}/partnership/${_partnership}/groupBy/sessionType";
 
         if (date.HasValue) {
             url += $"?date={date.Value:yyyy-MM-dd}";

@@ -1,4 +1,16 @@
 ﻿@inherits LayoutComponentBase
 
+@inject IJSRuntime JS
+
 <FluentDesignTheme StorageName="theme" Mode="DesignThemeModes.Light"/>
-@Body
+<div class="page-layout">
+    @Body
+</div>
+
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender) {
+        if (!firstRender) {
+            await JS.InvokeVoidAsync("playPageEntryTransition");
+        }
+    }
+}

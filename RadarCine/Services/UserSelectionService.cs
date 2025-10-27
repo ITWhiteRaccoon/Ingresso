@@ -4,7 +4,7 @@ namespace RadarCine.Services
 {
     public class UserSelectionService
     {
-        public List<Theater> SelectedTheaters { get; private set; } = new();
+        public List<Theater> SelectedTheaters { get; private set; } = [];
 
         public void StoreSelectedTheaters(IEnumerable<Theater> theaters)
         {
